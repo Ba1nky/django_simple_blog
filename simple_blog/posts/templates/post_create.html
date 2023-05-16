@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Створення нового поста{% endblock %}
+
+{% block content %}
+    <div class="blog__header">
+        <h2 class="blog__title">Створення нового поста</h2>
+    </div>
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form">
+            {% if form.errors %}
+                <ul class="form__errors">
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li class="form__error">{{error}}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            {% for field in form %}
+                <div class="form__group">
+                    {{ field.label_tag }} {{ field }}
+                </div>
+            {% endfor %}
+        </div>
+        <button type="submit" class="btn">Зберегти</button>
+        <a class="post__button btn btn-danger" href="{% url 'post_list' %}">Скасувати</a>
+    </form>
+{% endblock %}

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+        <title>{% block title %}{% endblock %}</title>
+    </head>
+    <body>
+        <main>
+            <div class="blog">
+                <div class="content">
+                    <header class="header">
+                        <div class="logo column">
+                            <h1 class="logo__text">Simple blog</h1>
+                        </div>
+                        <div class="account column">
+                            {% if user.is_authenticated %}
+                                <p class="account__item username">{{user.username}}</p>
+                                <a class="account__item logout" href="{% url 'logout' %}">Вийти</a>
+                            {% else %}
+                                <a class="account__item" href="{% url 'login' %}">Увійти</a>
+                                <a class="account__item" href="{% url 'registration' %}">Зареєструватися</a>
+                            {% endif %}
+                        </div>
+                    </header>
+
+                    <div class="blog__block">
+                        {% block content %}
+                        {% endblock %}
+                    </div>
+                </div>
+            </div>
+        </main>
+    </body>
+</html>

@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Зареєструватися{% endblock %}
+
+{% block content %}
+    <div class="blog__header">
+        <h2 class="blog__title">Зареєструватися</h2>
+    </div>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form">
+            {% if form.errors %}
+                <ul class="form__errors">
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li class="form__error">{{error}}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            {% for field in form %}
+                <div class="form__group">
+                    {{ field.label_tag }} {{ field }}
+                </div>
+            {% endfor %}
+        </div>
+        <button type="submit" class="btn">Зареєструватися</button>
+    </form>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Видалення поста{% endblock %}
+
+{% block content %}
+    <div class="blog__header">
+        <h2 class="blog__title">Видалення поста</h2>
+    </div>
+    <p class="blog__message">Ви впевнені, що бажаєте видалити пост "{{ post.title }}"?</p>
+    <form method="Post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Видалити</button>
+        <a class="post__button btn" href="{% url 'post_list' %}">Скасувати</a>
+    </form>
+{% endblock %}
