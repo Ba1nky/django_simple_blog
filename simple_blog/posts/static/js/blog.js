@@ -7,6 +7,11 @@ posts.forEach(post => {
   initializePost(post)
 })
 
+if (posts.length === 0){
+      let blog__message = document.querySelector('.blog__message');
+      blog__message.style.display = 'block';
+}
+
 function getCookie(name) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== '') {
@@ -175,10 +180,7 @@ function initializePost(post) {
     let postEditModeButtons = post.querySelector('.post__buttons.post-edit-mode');
     postEditModeButtons.style.display = 'none';
 
-    if (posts.length === 0){
-          let blog__message = document.querySelector('.blog__message');
-          blog__message.style.display = 'block';
-    }
+    console.log(posts.length);
 }
 
 
