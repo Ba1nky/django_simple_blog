@@ -1,48 +1,96 @@
-from django.urls import reverse_lazy
-from django.views.generic import ListView, UpdateView, DeleteView
-from django.views.generic.edit import CreateView
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.generic import ListView
+from django.views import View
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import JsonResponse, HttpResponseForbidden, HttpResponseBadRequest
+from django.shortcuts import get_object_or_404
 from .models import Post
 from .forms import PostForm
+import json
 
 
-class PostListView(LoginRequiredMixin, ListView):
+class BlogView(LoginRequiredMixin, ListView):
     model = Post
-    template_name = 'post_list.html'
+    template_name = 'blog.html'
     context_object_name = 'posts'
+    form = PostForm()
 
     def get_queryset(self):
         posts = super().get_queryset()
         return posts.filter(author=self.request.user)
 
-
-class PostCreate(LoginRequiredMixin, CreateView):
-    model = Post
-    fields = ['title', 'content']
-    template_name = 'post_create.html'
-    success_url = reverse_lazy('post_list')
-
-    def form_valid(self, form):
-        form.instance.author = self.request.user
-        return super().form_valid(form)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = PostForm()
+        return context
 
 
-class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    model = Post
-    form_class = PostForm
-    template_name = 'post_edit.html'
-    success_url = reverse_lazy('post_list')
+class PostAjaxView(LoginRequiredMixin, View):
+    @staticmethod
+    def check_ajax(request):
+        if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return HttpResponseBadRequest()
 
-    def test_func(self):
-        post = self.get_object()
-        return post.author == self.request.user
+    @staticmethod
+    def check_author(request, post):
+        if post.author != request.user:
+            return HttpResponseForbidden()
 
+    @staticmethod
+    def create_response(data=None, message=None, message_detail=None, status=200):
+        response_data = {
+            'data': data,
+            'message': message,
+            'messageDetail': message_detail,
+        }
+        return JsonResponse(response_data, status=status)
 
-class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-    model = Post
-    template_name = 'post_delete.html'
-    success_url = reverse_lazy('post_list')
+    @staticmethod
+    def serialize_post(post):
+        return {
+            'id': post.id,
+            'author': post.author.username,
+            'title': post.title,
+            'content': post.content,
+        }
 
-    def test_func(self):
-        post = self.get_object()
-        return post.author == self.request.user
+    def post(self, request):
+        self.check_ajax(request)
+
+        form = PostForm(request.POST)
+
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.author = request.user
+            post.save()
+            serialized_post = self.serialize_post(post)
+            return self.create_response(data={'post': serialized_post})
+
+        errors = form.errors.get_json_data(escape_html=True)
+        return self.create_response(message="Invalid form", message_detail=errors, status=400)
+
+    def put(self, request, post_id):
+        self.check_ajax(request)
+
+        post = get_object_or_404(Post, id=post_id)
+        self.check_author(request, post)
+
+        form = PostForm(json.loads(request.body.decode('utf-8')))
+
+        if form.is_valid():
+            post.title = form.data['title']
+            post.content = form.data['content']
+            post.save()
+            serialized_post = self.serialize_post(post)
+            return self.create_response(data={'post': serialized_post})
+
+        errors = form.errors.get_json_data(escape_html=True)
+        return self.create_response(message="Invalid form", message_detail=errors, status=400)
+
+    def delete(self, request, post_id):
+        self.check_ajax(request)
+
+        post = get_object_or_404(Post, id=post_id)
+        self.check_author(request, post)
+
+        post.delete()
+        return self.create_response(status=204)

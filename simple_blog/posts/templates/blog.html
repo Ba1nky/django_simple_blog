@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Список постів{% endblock %}
+
+{% block content %}
+    <div class="post-create">
+        <a class="blog__button btn">Створити новий пост</a>
+        <form method="POST" action="{% url 'post_ajax' %}" class="form">
+            <ul class="form__errors">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li class="form__error">{{error}}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+            {% for field in form %}
+                <div class="form__group">
+                    {{ field.label_tag }} {{ field }}
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn">Зберегти</button>
+        </form>
+    </div>
+    <div class="blog__body">
+        {% for post in posts %}
+            <div class="post">
+                <ul class="form__errors">
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li class="form__error">{{error}}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+                <div class="post__header">
+                    <h3 class="post__title">{{post.title}}</h3>
+                    <p class="post__author">{{post.author}}</p>
+                </div>
+                <div class="post__body">{{post.content}}</div>
+                <div class="post__buttons">
+                    <a class="post__button post-edit__button btn" href="#">Редагувати</a>
+                    <a class="post__button post-delete__button btn btn-danger" href="{% url 'post_ajax' post.pk %}">Видалити</a>
+                </div>
+                <div class="post__buttons post-edit-mode">
+                    <a class="post__button post-save__button btn" href="{% url 'post_ajax' post.pk %}">Зберегти</a>
+                    <a class="post__button post-cancel__button btn btn-danger" href="#">Відмінити</a>
+                </div>
+            </div>
+        {% endfor %}
+        <p class="blog__message" style="display: none;">Наразі немає жодного поста.</p>
+    </div>
+    <script src="{% static 'js/blog.js' %}"></script>
+{% endblock %}

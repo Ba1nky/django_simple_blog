@@ -1,10 +1,9 @@
 from django.urls import path
-from .views import PostListView, PostCreate, PostUpdateView, PostDeleteView
+from .views import BlogView, PostAjaxView
 
 
 urlpatterns = [
-    path('', PostListView.as_view(), name='post_list'),
-    path('create/',  PostCreate.as_view(), name='post_create'),
-    path('edit/<int:pk>', PostUpdateView.as_view(), name='post_edit'),
-    path('delete/<int:pk>', PostDeleteView.as_view(), name='post_delete'),
+    path('', BlogView.as_view(), name='post_list'),
+    path('ajax/', PostAjaxView.as_view(), name='post_ajax'),
+    path('ajax/<int:post_id>', PostAjaxView.as_view(), name='post_ajax'),
 ]
